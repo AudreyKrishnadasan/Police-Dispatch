@@ -126,7 +126,7 @@ public class PoliceDispatchSimulation {
 		// FIXME
 		int time = 0;
 		while(eventQueue.size() != 0) {
-			//REPORT
+		//REPORT any events at this time stamp
 			if(eventQueue.peek() == null) {
 				break;
 			}	
@@ -134,7 +134,8 @@ public class PoliceDispatchSimulation {
 			ArrayList<HeapElement> reports = new ArrayList<HeapElement>();
 			HeapElement i = eventQueue.peek();
 			
-			 // sort into resolutions and reports at that time stamp
+			 // get all the events at that time stamps
+			// sort all events into resolutions and reports at that time stamp
 			while(i.value.getReportTime() == time || i.value.getResolutionTime() == time) {
 				if(i.value.getResolutionTime() > 0) {
 					resolutions.add(eventQueue.poll());
@@ -148,21 +149,22 @@ public class PoliceDispatchSimulation {
 				}
 			}	
 			 
-			//do the reports
+			//do the reports for that time stamp - add to triage (to be dealt with)
 			for(int j = 0; j < reports.size(); j++) {
 				HeapElement d = reports.get(j);
 				triageQueue.add(d, d.value.getTriagePriority());
 				logReport(time,d.value);	
 			}
 				
-			//RESOLUTIONS
+			//RESOLUTIONS for that time stamp - resolve some issues 
 			for(int j = 0; j < resolutions.size(); j++){
 				Incident done = resolutions.get(j).value;
 				markUnitAvailable(done.getDispatchedUnit());
 				logResolution(time,done);
 			}
 			
-			//DISPATCH !!		
+		//DISPATCH units for events in the triage
+			// event -> eventQueue after dispatched to be "resolved" at a later time
 			while(availUnits() && triageQueue.size() > 0) {
 				HeapElement t = triageQueue.poll();
 				int unitNum = this.nextAvailableUnit();
@@ -178,7 +180,6 @@ public class PoliceDispatchSimulation {
 	}
 
 	public static void main(String[] args) {
-		// A test case for the simulation. The correct output is after the code.
 
 		 PoliceDispatchSimulation sim = new PoliceDispatchSimulation(4);
 	        sim.addToIncidentQueue(new Incident(339, IncidentType.ROBBERY, 97));
